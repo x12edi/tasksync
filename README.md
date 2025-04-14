@@ -20,4 +20,4 @@ A task management system built with ASP.NET Core, showcasing advanced concepts l
 - SQL Server
 - Swagger
 
-*More features (auth, microservices, Blazor) coming soon!*
+*More features (auth, microservices, React) coming soon!*
