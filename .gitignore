@@ -1,0 +1,15 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/CultureTestApp/.vs/CultureTestApp
+/CultureTestApp/obj
+/CultureTestApp/bin/Debug/net8.0
+/TaskService/bin/Debug/net8.0
+/TaskService/bin/Release/net8.0/win-x64
+/TaskService/obj
+/TaskService.Core/bin
+/TaskService.Core/obj
+/TaskService.Infrastructure/bin
+/TaskService.Infrastructure/obj
