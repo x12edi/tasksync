@@ -11,6 +11,7 @@ namespace TaskService.Infrastructure.Data
     public class AppDbContext : DbContext
     {
         public DbSet<Core.Models.Task> Tasks { get; set; }
+        public DbSet<User> Users { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -18,6 +19,10 @@ namespace TaskService.Infrastructure.Data
         {
             modelBuilder.Entity<Core.Models.Task>()
                 .HasIndex(t => t.AssignedTo);
+
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Username)
+                .IsUnique();
         }
     }
 }

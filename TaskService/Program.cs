@@ -1,18 +1,26 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using TaskService.Core.Services;
 using TaskService.Core.UnitOfWork;
 using TaskService.Infrastructure.Data;
 using TaskService.Infrastructure.UnitOfWork;
-using TaskService.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc.Versioning;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using TaskService.Endpoints;
+using TaskService.Middleware;
+using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Mvc;
-using TaskService.Core.Models;
-using TaskService.Core.Services;
-using System.Globalization;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US");
-CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("en-US");
+// Add logging
+builder.Services.AddLogging(logging =>
+{
+    logging.AddConsole();
+    logging.SetMinimumLevel(LogLevel.Debug);
+});
 
 // Add EF Core
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -20,11 +28,68 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Register services
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<TaskService.Core.Services.ITaskService, TaskService.Core.Services.TaskService>();
+builder.Services.AddScoped<ITaskService, TaskService.Core.Services.TaskService>();
+builder.Services.AddScoped<IUserService, UserService>();
+
+// Add rate limiting
+builder.Services.AddMemoryCache();
+builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+builder.Services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+builder.Services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+builder.Services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
+
+// Add JWT Authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+        };
+    });
+
+// Add Authorization
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("ManagerOnly", policy => policy.RequireRole("Manager"));
+});
 
 // Add Swagger
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new() { Title = "TaskSync API", Version = "v1" });
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Please enter JWT with Bearer into field",
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 // Add API versioning
 builder.Services.AddApiVersioning(options =>
@@ -36,50 +101,34 @@ builder.Services.AddApiVersioning(options =>
 
 var app = builder.Build();
 
-// Configure Swagger
+// Log claims before authorization
+app.Use(async (context, next) =>
+{
+    var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+    if (context.User.Identity?.IsAuthenticated == true)
+    {
+        var claims = context.User.Claims
+            .Select(c => $"{c.Type}: {c.Value}")
+            .Aggregate((a, b) => $"{a}, {b}");
+        logger.LogDebug($"User claims: {claims}");
+    }
+    else
+    {
+        logger.LogDebug("User is not authenticated");
+    }
+    await next(context);
+});
+
+// Configure middleware
+app.UseErrorHandling();
+app.UseIpRateLimiting();
 app.UseSwagger();
 app.UseSwaggerUI();
+app.UseAuthentication();
+app.UseAuthorization();
 
-app.MapGet("/api/v1/tasks", async (ITaskService service) =>
-    await service.GetAllTasksAsync())
-    .WithName("GetTasks")
-    .WithOpenApi();
-
-app.MapGet("/api/v1/tasks/{id}", async (int id, ITaskService service) =>
-    await service.GetTaskByIdAsync(id) is TaskService.Core.Models.Task task
-        ? Results.Ok(task)
-        : Results.NotFound())
-    .WithName("GetTaskById")
-    .WithOpenApi();
-
-app.MapPost("/api/v1/tasks", async (TaskService.Core.Models.Task task, ITaskService service) =>
-{
-    await service.CreateTaskAsync(task);
-    return Results.Created($"/api/v1/tasks/{task.Id}", task);
-})
-.WithName("CreateTask")
-.WithOpenApi();
-
-app.MapPut("/api/v1/tasks/{id}", async (int id, TaskService.Core.Models.Task inputTask, ITaskService service) =>
-{
-    var task = await service.GetTaskByIdAsync(id);
-    task.Title = inputTask.Title;
-    task.Description = inputTask.Description;
-    task.IsCompleted = inputTask.IsCompleted;
-    task.AssignedTo = inputTask.AssignedTo;
-    task.DueDate = inputTask.DueDate;
-    await service.UpdateTaskAsync(task);
-    return Results.NoContent();
-})
-.WithName("UpdateTask")
-.WithOpenApi();
-
-app.MapDelete("/api/v1/tasks/{id}", async (int id, ITaskService service) =>
-{
-    await service.DeleteTaskAsync(id);
-    return Results.NoContent();
-})
-.WithName("DeleteTask")
-.WithOpenApi();
+// Map endpoints
+app.MapTaskEndpoints();
+app.MapAuthEndpoints();
 
 app.Run();
