@@ -13,3 +13,7 @@
 /TaskService.Core/obj
 /TaskService.Infrastructure/bin
 /TaskService.Infrastructure/obj
+/UserService/obj
+/Gateway/bin/Debug/net8.0
+/Gateway/obj
+/UserService/bin/Debug/net8.0

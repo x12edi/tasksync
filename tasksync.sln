@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskService.Core", "TaskSer
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskService.Infrastructure", "TaskService.Infrastructure\TaskService.Infrastructure.csproj", "{EFECF282-F647-4F7F-B48B-BE5986D7CFBB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserService", "UserService\UserService.csproj", "{4CA55D0A-DD67-46DD-B4EB-06B7DDD2952B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gateway", "Gateway\Gateway.csproj", "{21E7C2D6-8BFC-4C22-A905-58301163A821}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +34,13 @@ Global
 		{EFECF282-F647-4F7F-B48B-BE5986D7CFBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EFECF282-F647-4F7F-B48B-BE5986D7CFBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EFECF282-F647-4F7F-B48B-BE5986D7CFBB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4CA55D0A-DD67-46DD-B4EB-06B7DDD2952B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CA55D0A-DD67-46DD-B4EB-06B7DDD2952B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CA55D0A-DD67-46DD-B4EB-06B7DDD2952B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CA55D0A-DD67-46DD-B4EB-06B7DDD2952B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21E7C2D6-8BFC-4C22-A905-58301163A821}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21E7C2D6-8BFC-4C22-A905-58301163A821}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21E7C2D6-8BFC-4C22-A905-58301163A821}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21E7C2D6-8BFC-4C22-A905-58301163A821}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

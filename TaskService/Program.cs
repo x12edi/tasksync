@@ -12,6 +12,7 @@ using TaskService.Middleware;
 using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
+using TaskService.Core.Queries;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,7 +30,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Register services
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ITaskService, TaskService.Core.Services.TaskService>();
-builder.Services.AddScoped<IUserService, UserService>();
+//builder.Services.AddScoped<IUserService, UserService>();
 
 // Add rate limiting
 builder.Services.AddMemoryCache();
@@ -99,25 +100,28 @@ builder.Services.AddApiVersioning(options =>
     options.ReportApiVersions = true;
 });
 
+//builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<GetAllTasksQuery>());
+
 var app = builder.Build();
 
 // Log claims before authorization
-app.Use(async (context, next) =>
-{
-    var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-    if (context.User.Identity?.IsAuthenticated == true)
-    {
-        var claims = context.User.Claims
-            .Select(c => $"{c.Type}: {c.Value}")
-            .Aggregate((a, b) => $"{a}, {b}");
-        logger.LogDebug($"User claims: {claims}");
-    }
-    else
-    {
-        logger.LogDebug("User is not authenticated");
-    }
-    await next(context);
-});
+//app.Use(async (context, next) =>
+//{
+//    var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+//    if (context.User.Identity?.IsAuthenticated == true)
+//    {
+//        var claims = context.User.Claims
+//            .Select(c => $"{c.Type}: {c.Value}")
+//            .Aggregate((a, b) => $"{a}, {b}");
+//        logger.LogDebug($"User claims: {claims}");
+//    }
+//    else
+//    {
+//        logger.LogDebug("User is not authenticated");
+//    }
+//    await next(context);
+//});
 
 // Configure middleware
 app.UseErrorHandling();
@@ -128,7 +132,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 // Map endpoints
+app.MapGet("/", () => "TaskSync TaskService API");
 app.MapTaskEndpoints();
-app.MapAuthEndpoints();
+//app.MapAuthEndpoints();
 
 app.Run();
