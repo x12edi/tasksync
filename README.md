@@ -1,16 +1,19 @@
 # TaskSync
-A task management system built with ASP.NET Core, showcasing advanced concepts like Repository/Unit of Work, minimal APIs, authentication, and clean architecture.
+A task management system built with ASP.NET Core microservices, featuring UserService for authentication, TaskService for task management, and an Ocelot gateway for routing. Implements MediatR, CQRS, service layer, Unit of Work, JWT authentication, and clean architecture.
 
 ## Features
+- User registration and login via minimal APIs (/api/v1/auth/register, /api/v1/auth/login).
+- MediatR/CQRS with LoginCommand, RegisterCommand.
+- Service layer (IUserService) and Unit of Work (IUnitOfWork).
 - Task CRUD via minimal APIs (`/api/v1/tasks`).
 - Repository and Unit of Work pattern for data access.
 - JWT authentication with role-based authorization (User/Manager).
-- Refresh tokens for session management.
 - Rate limiting to protect APIs.
 - Global error handling with JSON responses.
 - EF Core with local SQL Server.
 - Swagger with JWT support.
 - Modular API endpoints in separate files.
+- API Gateway : Routes /api/v1/auth/* to UserService, /api/v1/tasks/* to TaskService.
 
 ## Setup
 1. Clone the repo: `git clone <url>`
@@ -27,8 +30,12 @@ A task management system built with ASP.NET Core, showcasing advanced concepts l
 - SQL Server (local)
 - JWT Authentication
 - Swagger
+- MediatR (CQRS)
+- Ocelot Gateway
 
 ## Notes
+- Ensure Jwt:Key, Issuer, Audience match across UserService and TaskService.
+- Ocelot runs on https://localhost:5000, routing to UserService (5002) and TaskService (5001).
 - Rate limiting: 10 requests/sec general, 5 login attempts/min.
 - Manager role required for deleting tasks.
-- Next: Microservices, CQRS, and React dashboard.
+- Next: React dashboard.
