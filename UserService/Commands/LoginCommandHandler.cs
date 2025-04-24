@@ -63,7 +63,7 @@ namespace UserService.Commands
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(_configuration.GetValue<int>("Jwt:TokenExpiryMinutes", 30)),
+                expires: DateTime.UtcNow.AddMinutes(_configuration.GetValue<int>("Jwt:TokenExpiryMinutes", 5)),
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

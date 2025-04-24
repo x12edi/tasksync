@@ -26,7 +26,7 @@ public class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand, Core.
         };
 
         await _unitOfWork.Tasks.AddAsync(task);
-        await _unitOfWork.CompleteAsync();
+        await _unitOfWork.CompleteAsync(cancellationToken);
         return task;
     }
 }

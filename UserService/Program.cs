@@ -11,6 +11,11 @@ using UserService.Commands;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddLogging(logging =>
+{
+    logging.AddConsole();
+    logging.AddDebug();
+});
 
 // Register MediatR
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<LoginCommand>());
@@ -75,6 +80,16 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("AllowReact", builder =>
+//    {
+//        builder.WithOrigins("http://localhost:3000")
+//               .AllowAnyHeader()
+//               .AllowAnyMethod();
+//    });
+//});
+
 var app = builder.Build();
 
 // Configure Middleware
@@ -82,7 +97,7 @@ app.UseSwagger();
 app.UseSwaggerUI();
 app.UseAuthentication();
 app.UseAuthorization();
-
+//app.UseCors("AllowReact");
 // Map Endpoints
 app.MapAuthEndpoints();
 

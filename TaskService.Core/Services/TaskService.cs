@@ -12,77 +12,56 @@ namespace TaskService.Core.Services
 
     public class TaskService : ITaskService
     {
-        private readonly IMediator _mediator;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public TaskService(IMediator mediator)
+        public TaskService(IUnitOfWork unitOfWork)
         {
-            _mediator = mediator;
+            _unitOfWork = unitOfWork;
         }
 
-        //public async Task<IEnumerable<Models.Task>> GetAllTasksAsync()
-        //{
-        //    //Console.WriteLine($"Invariant Mode: {CultureInfo.InvariantCulture.Name}");
-        //    //Console.WriteLine($"Current Culture: {CultureInfo.CurrentCulture.Name}");
-        //    return await _unitOfWork.Tasks.GetAllAsync();
-        //}
-
-        public async Task<IEnumerable<Models.Task?>> GetAllTasksAsync()
+        public async Task<(IEnumerable<Models.Task>, int)> GetAllTasksAsync(
+            int page,
+            int pageSize,
+            string? status,
+            string? assignedTo,
+            string? search,
+            string? sortBy,
+            string? sortOrder,
+            CancellationToken cancellationToken)
         {
-            // Implement GetAllTasksQuery similarly
-            return await _mediator.Send(new GetAllTasksQuery());
+            return await _unitOfWork.Tasks.GetAllTasksAsync(
+                page,
+                pageSize,
+                status,
+                assignedTo,
+                search,
+                sortBy,
+                sortOrder,
+                cancellationToken);
         }
 
-        //public async Task<Models.Task> GetTaskByIdAsync(int id)
-        //{
-        //    return await _unitOfWork.Tasks.GetByIdAsync(id);
-        //}
-
-        public async Task<Models.Task?> GetTaskByIdAsync(int id)
+        public async Task<Core.Models.Task?> GetTaskByIdAsync(int id, CancellationToken cancellationToken)
         {
-            return await _mediator.Send(new GetTaskByIdQuery { Id = id });
+            return await _unitOfWork.Tasks.GetTaskByIdAsync(id, cancellationToken);
         }
 
-        //public async System.Threading.Tasks.Task CreateTaskAsync(Models.Task task)
-        //{
-        //    await _unitOfWork.Tasks.AddAsync(task);
-        //    await _unitOfWork.CompleteAsync();
-        //}
-
-        public async System.Threading.Tasks.Task CreateTaskAsync(TaskCreateDto dto)
+        public async Task<Models.Task> CreateTaskAsync(Core.Models.Task task, CancellationToken cancellationToken)
         {
-            var command = new CreateTaskCommand
-            {
-                Title = dto.Title,
-                Description = dto.Description,
-                IsCompleted = dto.IsCompleted,
-                AssignedTo = dto.AssignedTo,
-                DueDate = dto.DueDate
-            };
-            await _mediator.Send(command);
+            await _unitOfWork.Tasks.AddTaskAsync(task, cancellationToken);
+            await _unitOfWork.CompleteAsync(cancellationToken);
+            return task;
         }
 
-        //public async System.Threading.Tasks.Task UpdateTaskAsync(Models.Task task)
-        //{
-        //    _unitOfWork.Tasks.Update(task);
-        //    await _unitOfWork.CompleteAsync();
-        //}
-
-        public async System.Threading.Tasks.Task UpdateTaskAsync(Models.Task task)
+        public async System.Threading.Tasks.Task UpdateTaskAsync(Models.Task task, CancellationToken cancellationToken)
         {
-            // Implement UpdateTaskCommand
-            throw new NotImplementedException();
+            await _unitOfWork.Tasks.UpdateTaskAsync(task, cancellationToken);
+            await _unitOfWork.CompleteAsync(cancellationToken);
         }
-        //public async System.Threading.Tasks.Task DeleteTaskAsync(int id)
-        //{
-        //    var task = await _unitOfWork.Tasks.GetByIdAsync(id);
-        //    _unitOfWork.Tasks.Delete(task);
-        //    await _unitOfWork.CompleteAsync();
-        //}
 
-        public async System.Threading.Tasks.Task DeleteTaskAsync(int id)
+        public async System.Threading.Tasks.Task DeleteTaskAsync(int id, CancellationToken cancellationToken)
         {
-            // Implement DeleteTaskCommand
-            throw new NotImplementedException();
+            await _unitOfWork.Tasks.DeleteTaskAsync(id, cancellationToken);
+            await _unitOfWork.CompleteAsync(cancellationToken);
         }
     }
 }

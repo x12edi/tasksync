@@ -8,5 +8,7 @@ namespace UserService.Repositories
         Task AddAsync(User user);
         Task UpdateAsync(User user);
         Task<IEnumerable<User>> GetAllAsync();
+
+        IQueryable<User> GetAll();
     }
 }

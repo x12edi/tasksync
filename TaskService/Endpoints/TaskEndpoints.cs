@@ -4,6 +4,7 @@ using TaskService.Core.Models;
 using TaskService.Core.Commands;
 using TaskService.Core.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Mvc;
 
 namespace TaskService.Endpoints;
 
@@ -17,17 +18,54 @@ public static class TaskEndpoints
         //    .WithOpenApi()
         //    .RequireAuthorization();
 
-        app.MapGet("/api/v1/tasks", async (IMediator mediator, CancellationToken cancellationToken) =>
+        //app.MapGet("/api/v1/tasks", async (IMediator mediator, CancellationToken cancellationToken) =>
+        //{
+        //    try
+        //    {
+        //        var tasks = await mediator.Send(new GetAllTasksQuery(), cancellationToken);
+        //        return Results.Ok(tasks ?? Enumerable.Empty<Core.Models.Task>());
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Results.Problem(
+        //            detail: "An error occurred while retrieving tasks:" + ex.Message,
+        //            statusCode: StatusCodes.Status500InternalServerError
+        //        );
+        //    }
+        //})
+        //.WithName("GetTasks")
+        //.WithOpenApi()
+        //.RequireAuthorization();
+
+        app.MapGet("/api/v1/tasks", async (
+            IMediator mediator,
+            CancellationToken cancellationToken,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? status = null,
+            [FromQuery] string? assignedTo = null,
+            [FromQuery] string? search = null,
+            [FromQuery] string? sortBy = null,
+            [FromQuery] string? sortOrder = null) =>
         {
             try
             {
-                var tasks = await mediator.Send(new GetAllTasksQuery(), cancellationToken);
-                return Results.Ok(tasks ?? Enumerable.Empty<Core.Models.Task>());
+                var (tasks, totalCount) = await mediator.Send(new GetAllTasksQuery
+                {
+                    Page = page,
+                    PageSize = pageSize,
+                    Status = status,
+                    AssignedTo = assignedTo,
+                    Search = search,
+                    SortBy = sortBy,
+                    SortOrder = sortOrder
+                }, cancellationToken);
+                return Results.Ok(new { data = tasks ?? Enumerable.Empty<Core.Models.Task>(), totalCount });
             }
             catch (Exception ex)
             {
                 return Results.Problem(
-                    detail: "An error occurred while retrieving tasks:" + ex.Message,
+                    detail: "An error occurred while retrieving tasks: " + ex.Message,
                     statusCode: StatusCodes.Status500InternalServerError
                 );
             }

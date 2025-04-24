@@ -9,19 +9,20 @@ public class UnitOfWork : IUnitOfWork
 {
     private readonly AppDbContext _context;
     private ITaskRepository? _tasks;
-    //private IUserRepository? _users;
 
     public UnitOfWork(AppDbContext context)
     {
         _context = context;
     }
 
-    public ITaskRepository Tasks => _tasks ??= new TaskRepository(_context);
-    //public IUserRepository Users => _users ??= new UserRepository(_context);
-
-    public async Task<int> CompleteAsync()
+    public ITaskRepository Tasks
     {
-        return await _context.SaveChangesAsync();
+        get => _tasks ??= new TaskRepository(_context);
+    }
+
+    public async Task<int> CompleteAsync(CancellationToken cancellationToken)
+    {
+        return await _context.SaveChangesAsync(cancellationToken);
     }
 
     public void Dispose()

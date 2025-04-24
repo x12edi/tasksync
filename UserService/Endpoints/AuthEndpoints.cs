@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using UserService.Services;
 
@@ -11,6 +12,21 @@ namespace UserService.Endpoints
 
         public static void MapAuthEndpoints(this WebApplication app)
         {
+            app.MapGet("/api/v1/users", async (IUserService service, int page = 1, int pageSize = 10, string? sortBy = null, string? sortOrder = "asc") =>
+            {
+                var result = await service.GetUsersAsync(page, pageSize, sortBy, sortOrder);
+                return Results.Ok(new
+                {
+                    users = result.Users,
+                    total = result.Total,
+                    page = page,
+                    pageSize = pageSize
+                });
+                //return Results.Ok(result);
+            })
+            .RequireAuthorization()
+            .WithOpenApi();
+
             app.MapGet("/api/v1/auth/users", async (IUserService service, CancellationToken cancellationToken) =>
             {
                 try

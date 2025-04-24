@@ -30,5 +30,17 @@ namespace UserService.Services
         {
             return await _mediator.Send(new GetAllUsersQuery(), cancellationToken);
         }
+
+        public async Task<(List<UserDto> Users, int Total)> GetUsersAsync(int page, int pageSize, string? sortBy, string? sortOrder)
+        {
+            var query = new GetUsersInternalQuery
+            {
+                Page = page,
+                PageSize = pageSize,
+                SortBy = sortBy,
+                SortOrder = sortOrder
+            };
+            return await _mediator.Send(query);
+        }
     }
 }

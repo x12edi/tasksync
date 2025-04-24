@@ -1,0 +1,53 @@
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.logo {
+    height: 32px;
+    margin: 16px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.login-container {
+    max-width: 400px;
+    margin: 0 auto;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.header {
+    background: #fff;
+    width: 100%;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.header-title {
+    font-size: 18px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.logout-button {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+}
+
+.content {
+    margin: 24px 16px;
+    padding: 24px;
+    background: #fff;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.content-text {
+    white-space: nowrap;
+}

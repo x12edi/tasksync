@@ -10,7 +10,6 @@ namespace TaskService.Core.UnitOfWork
     public interface IUnitOfWork : IDisposable
     {
         ITaskRepository Tasks { get; }
-        //IUserRepository Users { get; }
-        Task<int> CompleteAsync();
+        Task<int> CompleteAsync(CancellationToken cancellationToken);
     }
 }
