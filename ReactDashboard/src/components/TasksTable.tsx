@@ -95,11 +95,11 @@ const TasksTable: React.FC = () => {
         const response = await axios.get('http://localhost:5000/api/v1/users', {
             headers: {Authorization: `Bearer ${token}` },
       });
-        console.log('fetchUsers: Response:', response.data);
-        const userData = Array.isArray(response.data)
-        ? response.data
-        : response.data.data && Array.isArray(response.data.data)
-        ? response.data.data
+        console.log('fetchUsers: Response:', response.data.users);
+        const userData = Array.isArray(response.data.users)
+        ? response.data.users
+        : response.data.users && Array.isArray(response.data.users)
+        ? response.data.users
         : [];
         if (!userData.length) {
             console.warn('fetchUsers: No users found');
